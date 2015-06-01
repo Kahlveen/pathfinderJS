@@ -24,8 +24,8 @@ $(document).ready(function () {
     var circlePos = {x:1.5 * cellWidth,y:1.5 * cellWidth, r: 15};
     var circleDelta = {x:0, y:0};
     var circleNextGrid = {x: 1, y: 2};
-    var frameRate = 60;
-    var moveRate = frameRate / 2;
+    var timePerFrame = 30;
+    var moveRate = timePerFrame / 2;
         
     canvas.addEventListener('mousedown', function(e) 
     {
@@ -130,7 +130,7 @@ $(document).ready(function () {
         ComputeWallLocation();
                 
         if(typeof game_loop != "undefined") clearInterval(game_loop);
-		game_loop = setInterval(main, frameRate);
+		game_loop = setInterval(main, timePerFrame);
 
     }
     
