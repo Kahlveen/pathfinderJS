@@ -10,8 +10,6 @@ $(document).ready(function () {
     var cellWidth = 50;
     var maxCells = canvasWidth / cellWidth;
     var wallLocation = [];
-    var freeSpace = [];
-    var checkFreeSpace = false;
     var goalPos = {x: 1, y: 1};
     var wall = [[1, 1, 1, 1, 1, 1, 1, 1],
                 [1, 0, 0, 0, 0, 0, 0, 1],
@@ -23,16 +21,15 @@ $(document).ready(function () {
                 [1, 1, 1, 1, 1, 1, 1, 1]];
     
     var mouseGridPos = {x:0, y:0};
-    var mousePos = {x:0, y:0};
     var circlePos = {x:1.5 * cellWidth,y:1.5 * cellWidth, r: 15};
+    var circleDelta = {x:0, y:0};
     var circleNextGrid = {x: 1, y: 2};
     var frameRate = 60;
+    var moveRate = frameRate / 2;
         
     canvas.addEventListener('mousedown', function(e) 
     {
         var rect = canvas.getBoundingClientRect();
-        mousePos.x = e.pageX - rect.left;
-        mousePos.y = e.pageY - rect.top;
         
         mouseGridPos.x = Math.floor((e.pageX - rect.left) / cellWidth);
         mouseGridPos.y = Math.floor((e.pageY - rect.top)/ cellWidth);
@@ -40,9 +37,22 @@ $(document).ready(function () {
         //If mouse position lies within freeSpace
         if(wall[mouseGridPos.y][mouseGridPos.x] == 0)
         {
-            checkFreeSpace = true;  
             goalPos.x = mouseGridPos.x;
-            goalPos.y = mouseGridPos.y;      
+            goalPos.y = mouseGridPos.y;
+                
+            if(((goalPos.x+0.5) * cellWidth - circlePos.x) > 0)
+                circleDelta.x = 5;
+            else if (((goalPos.x+0.5) * cellWidth - circlePos.x) < 0)
+                circleDelta.x = -5;
+            else 
+                circleDelta.x = 0;
+            
+            if(((goalPos.y+0.5) * cellWidth - circlePos.y) > 0)
+                circleDelta.y = 5;
+            else if (((goalPos.y+0.5) * cellWidth - circlePos.y) < 0)
+                circleDelta.y = -5;
+            else 
+                circleDelta.y = 0;
         }      
     
     }, false);
@@ -57,10 +67,13 @@ $(document).ready(function () {
         ctx.stroke();        
     }
     
-    //Move 1 grid every second
     function MoveCircle()
     {
-        circleNextGrid.x   
+        if (Math.floor(circlePos.x - ((goalPos.x+0.5) * cellWidth)) != 0)
+            circlePos.x += circleDelta.x;
+
+        if (Math.floor(circlePos.y - ((goalPos.y+0.5) * cellWidth)) != 0)
+            circlePos.y += circleDelta.y;          
     }
     
     function DrawGoalBox()
@@ -79,9 +92,6 @@ $(document).ready(function () {
             {
                 if(wall[row][col] == 1)
                     wallLocation.push({x: col*cellWidth, y: row*cellWidth});  
-                
-                else
-                    freeSpace.push({x: col*cellWidth, y: row*cellWidth});
             }
         }
     }
@@ -108,8 +118,9 @@ $(document).ready(function () {
     
     function DisplayMousePosition()
     {
-        var mousePosText = "GridX: " + mouseGridPos.x + ", GridY: " + mouseGridPos.y                 + " rawX: " + mousePos.x +  " rawY: " + mousePos.y +
-                " isFreeSpace: " + checkFreeSpace;
+        var mousePosText = "GoalX: " + goalPos.x + ", GoalY: " + goalPos.y + 
+                            " circleDeltaX: " + circleDelta.x + " circleDeltaY: " + circleDelta.y +
+                            " circlePosX: " + circlePos.x + " circlePosY: " + circlePos.y;
         ctx.fillStyle = "black";
         ctx.fillText(mousePosText,5,canvasHeight-5);
     }     
@@ -128,6 +139,7 @@ $(document).ready(function () {
         RefreshCanvas();
         DrawWall();
         DrawGoalBox();
+        MoveCircle();
         DrawCircle();        
         DisplayMousePosition();
     }
