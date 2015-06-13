@@ -198,17 +198,6 @@ $(document).ready(function () {
         ctx.strokeRect(x*cellWidth,y*cellWidth,cellWidth,cellWidth);
     }
 
-    // function DrawAdjacentBox()
-    // {
-    //     for(var i = 0; i < adjacentFreeGrid.length; i++)
-    //     {
-    //         ctx.fillStyle = "green";
-    //         ctx.fillRect(adjacentFreeGrid[i].x*cellWidth,adjacentFreeGrid[i].y*cellWidth,cellWidth,cellWidth);
-    //         ctx.strokeStyle = "white";
-    //         ctx.strokeRect(adjacentFreeGrid[i].x*cellWidth,adjacentFreeGrid[i].y*cellWidth,cellWidth,cellWidth);
-    //     }
-    // }
-
     function ComputeWallLocation()
     {
         for (var row = 0; row < wall.length; row++)
@@ -241,15 +230,6 @@ $(document).ready(function () {
         }
     }
 
-    // function DisplayMousePosition()
-    // {
-    //     var mousePosText = "GoalX: " + goalPos.x + ", GoalY: " + goalPos.y +
-    //                         " circleDeltaX: " + circleDelta.x + " circleDeltaY: " + circleDelta.y +
-    //                         " circlePosX: " + circlePos.x + " circlePosY: " + circlePos.y;
-    //     ctx.fillStyle = "black";
-    //     ctx.fillText(mousePosText,5,canvasHeight-5);
-    // }
-
     function Init()
     {
         ComputeWallLocation();
@@ -272,9 +252,3 @@ $(document).ready(function () {
     Init();
 
 });
-
-
-// Given goal grid
-// Find adjacent grids, assign value of 1 to them
-// For grids of value 1, iterate through and find adjacent grids. assign value of 2 to them
-// Repeat for all adjacent grids until grid reaches current circle grid
