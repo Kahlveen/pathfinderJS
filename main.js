@@ -10,7 +10,7 @@ $(document).ready(function () {
     var cellWidth = 50;
     var maxCells = canvasWidth / cellWidth;
     var wallLocation = [];
-    var gridValues = [];
+    var gridValues;
     var goalPos = {x: 1, y: 1};
     var wall = [[1, 1, 1, 1, 1, 1, 1, 1],
                 [1, 0, 0, 0, 0, 0, 0, 1],
@@ -59,6 +59,42 @@ $(document).ready(function () {
 
             if (Math.floor(this.y - ((this.destGridY+0.5) * cellWidth)) === 0)
                 this.gridY = this.destGridY;
+
+            if(this.gridX === this.destGridX && this.gridY === this.destGridY)
+                this.UpdateNextGrid();
+        },
+
+        //Inspects the gridValues to determine which adjacent grid has the smallest value
+        UpdateNextGrid: function()
+        {
+            var adjacentGrid = [{x: this.destGridX - 1, y: this.destGridY},
+                                {x: this.destGridX, y: this.destGridY - 1},
+                                {x: this.destGridX, y: this.destGridY + 1},
+                                {x: this.destGridX + 1, y: this.destGridY}];
+
+            var lowestValue = 99;
+            var gridWithLowestValue = {x:1,y:1};
+
+            for(var i = 0; i < adjacentGrid.length; i++)
+            {
+                if(wall[adjacentGrid[i].y][adjacentGrid[i].x] === 0)
+                {
+                    if(gridValues[adjacentGrid[i].y][adjacentGrid[i].x] < lowestValue)
+                    {
+                        lowestValue = gridValues[adjacentGrid[i].y][adjacentGrid[i].x];
+                        gridWithLowestValue.x = adjacentGrid[i].x;
+                        gridWithLowestValue.y = adjacentGrid[i].y;
+                    }
+                }
+            }
+
+            //Check if current destGrid has the lowest value
+            //i.e. already reached destination
+            if (gridValues[this.destGridY][this.destGridX] > lowestValue)
+            {
+                this.destGridX = gridWithLowestValue.x;
+                this.destGridY = gridWithLowestValue.y;
+            }
         }
     };
 
@@ -75,39 +111,25 @@ $(document).ready(function () {
         //If mouse position lies within freeSpace
         if(wall[mouseGridPos.y][mouseGridPos.x] === 0)
         {
-            circle.destGridX = mouseGridPos.x;
-            circle.destGridY = mouseGridPos.y;
             goalPos.x = mouseGridPos.x;
             goalPos.y = mouseGridPos.y;
-
-            //Given goalPos, assign values to the adjacent grids until
-
-
-//            adjacentFreeGrid.push({x:1,y:2});
-            //FindFreeGridsToCircle(goalPos.x, goalPos.y);
+            ResetFreeSpaceGridValues();
+            FindFreeGridsToGoal(goalPos.x,goalPos.y);
         }
 
     }, false);
 
     function ResetFreeSpaceGridValues()
     {
+        gridValues = [];
+
         //Create a multi-dimensional array and initialise to 0
         for(var i =0; i<8; i++)
-            gridValues.push(new Array(8).fill(0));
+            gridValues.push(new Array(8).fill(-1));
     }
 
     function FindAdjacentFreeGrid(gridX,gridY,gridVal)
     {
-        //Find adjacent free space
-        // var adjacentGrid = [{x: gridX - 1, y: gridY - 1},
-        //                     {x: gridX - 1, y:  gridY},
-        //                     {x: gridX - 1, y: gridY + 1},
-        //                     {x: gridX, y: gridY - 1},
-        //                     {x: gridX, y: gridY + 1},
-        //                     {x: gridX + 1, y: gridY - 1},
-        //                     {x: gridX + 1, y: gridY},
-        //                     {x: gridX + 1, y: gridY + 1}];
-
         var adjacentGrid = [{x: gridX - 1, y:  gridY},
                             {x: gridX, y: gridY - 1},
                             {x: gridX, y: gridY + 1},
@@ -119,7 +141,7 @@ $(document).ready(function () {
         {
             if(wall[adjacentGrid[i].y][adjacentGrid[i].x] === 0)
             {
-                if (gridValues[adjacentGrid[i].y][adjacentGrid[i].x] === 0)
+                if (gridValues[adjacentGrid[i].y][adjacentGrid[i].x] === -1)
                 {
                     gridValues[adjacentGrid[i].y][adjacentGrid[i].x] = gridVal;
                     tmpFreeGrid[gridVal-1].push({x: adjacentGrid[i].x, y: adjacentGrid[i].y});
@@ -140,15 +162,13 @@ $(document).ready(function () {
         }
     }
 
-    function FindFreeGridsToCircle(goalGridX, goalGridY)
+    function FindFreeGridsToGoal(goalGridX, goalGridY)
     {
         var gridVal = 1;
         tmpFreeGrid = [];
-        gridValues[goalGridY][goalGridX] = 999;
+        gridValues[goalGridY][goalGridX] = 0;
 
-        //terminating condition?
         FindAdjacentFreeGrid(goalGridX, goalGridY,gridVal);
-
 
         while(tmpFreeGrid[gridVal-1].length !== 0)
         {
@@ -156,10 +176,8 @@ $(document).ready(function () {
                 FindAdjacentFreeGrid(tmpFreeGrid[gridVal-1][i].x,tmpFreeGrid[gridVal-1][i].y,gridVal+1);
 
             gridVal += 1;
-            debugGridValue();
+            //debugGridValue();
         }
-
-
     }
 
     function DrawCircle(x,y,r)
@@ -236,7 +254,6 @@ $(document).ready(function () {
     {
         ComputeWallLocation();
         ResetFreeSpaceGridValues();
-        FindFreeGridsToCircle(6,1);
 
         if(typeof game_loop != "undefined") clearInterval(game_loop);
         game_loop = setInterval(main, timePerFrameMS);
@@ -247,11 +264,9 @@ $(document).ready(function () {
     {
         RefreshCanvas();
         DrawWall();
-        // DrawAdjacentBox();
-        DrawGoalBox(circle.destGridX, circle.destGridY);
+        DrawGoalBox(goalPos.x, goalPos.y);
         circle.MoveToNextGrid();
         DrawCircle(circle.x,circle.y,circle.r);
-        // DisplayMousePosition();
     }
 
     Init();
